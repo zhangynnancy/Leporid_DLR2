@@ -6,7 +6,7 @@ Simulation in Figure 1 --> codes/simulator.py
 
 Generate leporid embeddings --> codes/spectral_emb_gen.py
 
-Our proposed recommendation model --> codes/main.py
+Our proposed recommendation model --> codes/DLR2/main.py
 
 ### For Leporid Initialization
 
@@ -24,10 +24,10 @@ The results will be saved in the folder:
 Run the codes:
 > python spectral_emb_gen.py
 
-### For our new proposed recommendation model, DLR^2
+### For our new proposed recommendation model, DLR2
 
 Run the codes:
-> python main.py
+> python DLR2/main.py
 
 
 
