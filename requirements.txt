@@ -347,11 +347,6 @@ sympy=1.4=py37_0
 tabulate=0.8.7=pypi_0
 tbb=2019.4=hfd86e86_0
 tblib=1.4.0=py_0
-tensorboard=1.13.1=pypi_0
-tensorboardx=2.0=pypi_0
-tensorflow=1.13.1=pypi_0
-tensorflow-estimator=1.13.0=pypi_0
-tensorflow-probability=0.6.0=pypi_0
 termcolor=1.1.0=py37_1
 terminado=0.8.2=py37_0
 testpath=0.4.2=py37_0
