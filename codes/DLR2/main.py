@@ -1,5 +1,4 @@
 import argparse
-import psutil
 import os
 import cProfile
 import gc
@@ -356,8 +355,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print(args)
     print('time = ', time.asctime(time.localtime(time.time())))
-    mem = psutil.virtual_memory()
-    print('memory = ', int(round(mem.percent)))
 
     print('pretrain_model_type = ', args.pretrain_model_type)
 
