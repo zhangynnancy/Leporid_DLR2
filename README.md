@@ -1,7 +1,7 @@
 # LEPORID_DLR2
 This is our implementation for the paper:
 
->Yinan Zhang, Boyang Li, Yong Liu, Hao Wang and Chunyan Miao (2020). Initialization Matters: Regularizing Manifold-informed Initialization for Neural Recommendation Systems. Accepeted by SIGKDD 2021.
+>Yinan Zhang, Boyang Li, Yong Liu, Hao Wang and Chunyan Miao (2020). Initialization Matters: Regularizing Manifold-informed Initialization for Neural Recommendation Systems. Accepeted by KDD 2021.
 
 
 ## Introduction
@@ -19,23 +19,17 @@ If you want to use our codes in your research, please cite:
                Hao Wang and
                Chunyan Miao,
   title     = {Initialization Matters: Regularizing Manifold-informed Initialization for Neural Recommendation Systems},
-  booktitle = {Proceedings of the 27th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, {SIGKDD} 2021, Singapore,
-              August 14-18, 2021.},
+  booktitle = {Proceedings of the 27th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, 
+              {SIGKDD} 2021, Singapore, August 14-18, 2021.},
   year      = {2021},
 }
 ```
 
-## Implementation
+## Enviroment
 
 Environment Requirement --> requirements.txt
 
-Simulation in Figure 1 --> codes/simulator_fig2.py
-
-Generate leporid embeddings --> codes/le_leporid.py
-
-Our proposed recommendation model --> codes/DLR2/main.py
-
-### Datasets
+## Datasets
 
 The dataset should be placed in the folder:
 > args.data_folder + args.dataset + '_train.txt'
@@ -45,14 +39,19 @@ with the following structure:
 
 Example dataset is placed in dataset/ml_1m_all/ml_1m_all_train.txt. Note that, both "ratings" and "time" are not used in the Leporid Initialization.
 
-The results will be saved in the folder:
-> args.data_folder + '/emb/' + args.d_type
+The initialization results will be saved in the folder:
+> args.data_folder + '/emb/' + args.d_type + str(args.weak_lambda)
+
+## Run the Codes
+
+Run the simulator(Fig.2) in the paper:
+> python codes/simulator_fig2.py
 
 Run the le or leporid initialization:
-> python le_leporid.py
+> python codes/le_leporid.py
 
 Run the our new proposed recommendation model, DLR2:
-> python DLR2/main.py
+> python codes/DLR2/main.py
 
 
 

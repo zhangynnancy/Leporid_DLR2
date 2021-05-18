@@ -79,12 +79,14 @@ def load_emb_file(args, topk, distance, norm, dim, type):
     print('Initialize embedding with ', args.initialization)
     if type == 1:
         print('load item emb')
-        file_name = args.data_folder + 'emb/' + args.initialization + '/' + args.dataset + '_item' + str(
-            dim) + '_k' + str(topk) + norm + distance + '_norm.npy'
+        file_name = args.data_folder + 'emb/' + args.initialization + str(
+            args.coefficient) + '/' + args.dataset + '_item' + str(dim) + '_k' + str(
+            topk) + norm + distance + '_norm.npy'
     else:
         print('load user emb')
-        file_name = args.data_folder + 'emb/' + args.initialization + '/' + args.dataset + '_user' + str(
-            dim) + '_k' + str(topk) + norm + distance + '_norm.npy'
+        file_name = args.data_folder + 'emb/' + args.initialization + str(
+            args.coefficient) + '/' + args.dataset + '_user' + str(dim) + '_k' + str(
+            topk) + norm + distance + '_norm.npy'
     print('file_name = ', file_name)
     emb = np.load(file_name)
     print('emb shape = ', emb.shape)
@@ -145,11 +147,11 @@ class Interaction(object):
         print('item num = ', len(self.item_set))
         print('user num = ', len(self.train_file))
 
-        self.pre_lr = hyperparameters['lr']
+        self.lr = hyperparameters['lr']
         self.mul_store_size = args.mul_store_size
 
         self.state_num = int(args.state_num)
-        self.pre_batch_size = args.pre_batch_size
+        self.batch_size = args.batch_size
         self.dim = hyperparameters['dim']
 
         self.user_set = list(self.train_file.keys())
@@ -183,11 +185,11 @@ class Interaction(object):
         self.store_validation()
 
         # For train
-        self.pre_sample = []
-        self.pre_n = 0
-        self.pre_hinge_m = 0.5
-        self.pre_loss_actor = args.pre_loss_actor
-        self.pre_loss_critic = args.pre_loss_critic
+        self.sample = []
+        self.n = 0
+        self.hinge_m = 0.5
+        self.loss_actor = args.loss_actor
+        self.loss_critic = args.loss_critic
         self.pretrain_model_type = args.pretrain_model_type
 
         self.p_memory = []
@@ -224,41 +226,40 @@ class Interaction(object):
             print('no gpu')
 
         # initial code
-        self.Feature_Gen_optim = Adam(self.Feature_Gen.parameters(), lr=self.pre_lr)
-        self.Critic_Network_optim = Adam(self.Critic_Network.parameters(), lr=self.pre_lr)
-        self.Actor_Network_optim = Adam(self.Actor_Network.parameters(), lr=self.pre_lr)
+        self.Feature_Gen_optim = Adam(self.Feature_Gen.parameters(), lr=self.lr)
+        self.Critic_Network_optim = Adam(self.Critic_Network.parameters(), lr=self.lr)
+        self.Actor_Network_optim = Adam(self.Actor_Network.parameters(), lr=self.lr)
 
     # Pre-Train Part
-    def pre_init(self, user, num):
+    def init(self, user, num):
         cur_state = self.train_file[user][num: num + self.state_num]
         next_rec = self.train_file[user][num + self.state_num]
         return cur_state, next_rec
 
-    def pre_multi_store(self, stored_neg):
+    def multi_store(self, stored_neg):
         tempt = random.randint(0, stored_neg-1)
-        random.shuffle(self.pre_sample)
+        random.shuffle(self.sample)
         for i in range(self.mul_store_size):
-            # print('pretrain = ', [self.pre_sample[i][0], self.pre_sample[i][1], [self.pre_sample[i][2]], [1]])
             self.p_memory.append(
-                [self.pre_sample[i][0], self.pre_sample[i][1], [self.pre_sample[i][2]], [1]])
+                [self.sample[i][0], self.sample[i][1], [self.sample[i][2]], [1]])
             self.n_memory.append(
-                [self.pre_sample[i][0], self.pre_sample[i][1], [self.pre_sample[i][3][tempt]], [-1]])
+                [self.sample[i][0], self.sample[i][1], [self.sample[i][3][tempt]], [-1]])
 
-    def pre_update(self):
+    def update(self):
         self.Feature_Gen.train()
         self.Feature_Gen_optim.zero_grad()
         critic_loss = []
         actor_loss = []
         loss_critic, loss_actor = None, None
 
-        if (self.pre_n+1) * int(self.pre_batch_size / 2) > len(self.p_memory):
-            be = self.pre_n * int(self.pre_batch_size / 2)
+        if (self.n+1) * int(self.batch_size / 2) > len(self.p_memory):
+            be = self.n * int(self.batch_size / 2)
             af = len(self.p_memory)
-            self.pre_n = 0
+            self.n = 0
         else:
-            be = self.pre_n * int(self.pre_batch_size / 2)
-            af = (self.pre_n + 1) * int(self.pre_batch_size / 2)
-            self.pre_n += 1
+            be = self.n * int(self.batch_size / 2)
+            af = (self.n + 1) * int(self.batch_size / 2)
+            self.n += 1
 
         # positive
         p_samples = self.p_memory[be:af]
@@ -277,8 +278,6 @@ class Interaction(object):
         if self.add_regularization:
             user = np.concatenate((p_user, n_user), axis=None)
             action = np.concatenate((p_action, n_action), axis=None)
-            # user = user.astype('int8')
-            # action = action.astype('int8')
             try:
                 init_user_emb = self.user_emb[user]
                 init_item_emb = self.item_emb[action]
@@ -322,21 +321,21 @@ class Interaction(object):
             n_reward = self.Critic_Network(n_s, n_action)
 
             # Note that p_reward should be smaller while n_reward should be larger
-            if self.pre_loss_critic == 'hinge':
+            if self.loss_critic == 'hinge':
                 # hinge loss
                 temp = p_reward - n_reward
-                loss_critic = torch.clamp(temp + self.pre_hinge_m, min=0)
+                loss_critic = torch.clamp(temp + self.hinge_m, min=0)
                 loss_critic = torch.mean(loss_critic)
 
-            elif self.pre_loss_critic == 'log':
+            elif self.loss_critic == 'log':
                 # log loss
                 temp = p_reward - n_reward
                 loss_critic = torch.log(1 + torch.exp(temp))
                 loss_critic = torch.mean(loss_critic)
 
-            elif self.pre_loss_critic == 'square_square':
+            elif self.loss_critic == 'square_square':
                 # square-square loss
-                n_reward = torch.clamp(self.pre_hinge_m - n_reward, min=0)
+                n_reward = torch.clamp(self.hinge_m - n_reward, min=0)
                 loss_critic = p_reward ** 2 + n_reward ** 2
                 loss_critic = torch.mean(loss_critic)
             else:
@@ -359,25 +358,25 @@ class Interaction(object):
             # negative
             n_pse_action = self.Actor_Network(n_s)
 
-            if self.pre_loss_actor == 'hinge':
+            if self.loss_actor == 'hinge':
                 # hinge loss
                 temp = (p_pse_action - p_action) ** 2 - (n_pse_action - n_action) ** 2
                 temp = torch.mean(temp, 1)
-                loss_actor = torch.clamp(temp + self.pre_hinge_m, min=0)
+                loss_actor = torch.clamp(temp + self.hinge_m, min=0)
                 loss_actor = torch.mean(loss_actor)
 
-            elif self.pre_loss_actor == 'log':
+            elif self.loss_actor == 'log':
                 # log loss
                 temp = (p_pse_action - p_action) ** 2 - (n_pse_action - n_action) ** 2
                 temp = torch.mean(temp, 1)
                 loss_actor = torch.log(1 + torch.exp(temp))
                 loss_actor = torch.mean(loss_actor)
 
-            elif self.pre_loss_actor == 'square_square':
+            elif self.loss_actor == 'square_square':
                 # square-square loss
                 temp_pos = torch.mean((p_pse_action - p_action) ** 2, 1)
                 temp_neg = torch.mean((n_pse_action - n_action) ** 2, 1)
-                temp_neg = torch.clamp(self.pre_hinge_m - temp_neg, min=0)
+                temp_neg = torch.clamp(self.hinge_m - temp_neg, min=0)
                 loss_actor = temp_pos ** 2 + temp_neg ** 2
                 loss_actor = torch.mean(loss_actor)
             else:
@@ -452,7 +451,7 @@ class Interaction(object):
                     scores = cur_scores
                 else:
                     scores = np.append(scores, cur_scores)
-        # scores = -scores
+
         index = list(scores.argsort()[0:self.test_rec_num])
         rec_items = can_items[:, np.newaxis][index, :].T[0]
         return rec_items
@@ -526,10 +525,9 @@ class Interaction(object):
         n_loss_actor = []
 
         # for positive samples
-        p_user, p_state, p_action, p_reward = self.validate_p_memory.sample_and_split(int(self.pre_batch_size))
+        p_user, p_state, p_action, p_reward = self.validate_p_memory.sample_and_split(int(self.batch_size))
         user = to_tensor(p_user)
         state = to_tensor(p_state)
-        reward = to_tensor(p_reward, dtype='float')
         action = to_tensor(p_action)
         action = self.Feature_Gen.item_embeddings(action)
         s = self.Feature_Gen(user, state)
@@ -538,23 +536,19 @@ class Interaction(object):
         with torch.no_grad():
             pse_reward = self.Critic_Network(s, action)
             pse_reward = torch.mean(pse_reward)
-            # loss = criterion(pse_reward, reward)
             p_loss_critic.append(float(to_numpy(pse_reward)))
 
             self.Actor_Network.eval()
             pse_action = self.Actor_Network(s)
 
-        # loss_actor = pse_action.mm(action.t())
-        # loss_actor_p = torch.mean(torch.diagonal(loss_actor, 0))
         loss = criterion(pse_action, action)
         p_loss_actor.append(float(to_numpy(loss)))
 
         # for negative samples
-        n_user, n_state, n_action, n_reward = self.validate_n_memory.sample_and_split(int(self.pre_batch_size))
+        n_user, n_state, n_action, n_reward = self.validate_n_memory.sample_and_split(int(self.batch_size))
 
         user = to_tensor(n_user)
         state = to_tensor(n_state)
-        reward = to_tensor(n_reward, dtype='float')
         action = to_tensor(n_action)
         action = self.Feature_Gen.item_embeddings(action)
         s = self.Feature_Gen(user, state)
@@ -562,13 +556,10 @@ class Interaction(object):
         with torch.no_grad():
             pse_reward = self.Critic_Network(s, action)
             pse_reward = torch.mean(pse_reward)
-            # loss = criterion(pse_reward, reward)
             n_loss_critic.append(float(to_numpy(pse_reward)))
 
             pse_action = self.Actor_Network(s)
 
-        # loss_actor = pse_action.mm(action.t())
-        # loss_actor_p = torch.mean(torch.diagonal(loss_actor, 0))
         loss = criterion(pse_action, action)
         n_loss_actor.append(float(to_numpy(loss)))
 

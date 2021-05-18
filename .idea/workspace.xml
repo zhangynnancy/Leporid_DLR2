@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="64b3c333-31b1-450a-a204-418984168338" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/Leporid_DLR2.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Leporid_DLR2.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/codes/DLR2/interaction.py" beforeDir="false" afterPath="$PROJECT_DIR$/codes/DLR2/interaction.py" afterDir="false" />
@@ -46,7 +44,7 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../General_Usage" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
-  <component name="RunManager" selected="Python.le_leporid">
+  <component name="RunManager" selected="Python.main">
     <configuration name="le_leporid" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Leporid_DLR2" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -93,8 +91,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.le_leporid" />
         <item itemvalue="Python.main" />
+        <item itemvalue="Python.le_leporid" />
       </list>
     </recent_temporary>
   </component>
@@ -116,7 +114,7 @@
       <workItem from="1617245892417" duration="1199000" />
       <workItem from="1621320705160" duration="120000" />
       <workItem from="1621320830899" duration="15000" />
-      <workItem from="1621320855088" duration="2608000" />
+      <workItem from="1621320855088" duration="4988000" />
     </task>
     <servers />
   </component>
@@ -135,7 +133,7 @@
     </option>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/Leporid_DLR2$main.coverage" NAME="main Coverage Results" MODIFIED="1612172429701" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/codes/DLR2" />
+    <SUITE FILE_PATH="coverage/Leporid_DLR2$main.coverage" NAME="main Coverage Results" MODIFIED="1621331553101" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/codes/DLR2" />
     <SUITE FILE_PATH="coverage/Leporid_DLR2$le_leporid.coverage" NAME="le_leporid Coverage Results" MODIFIED="1621326966093" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/codes" />
   </component>
 </project>
