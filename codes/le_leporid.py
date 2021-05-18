@@ -5,6 +5,7 @@ import time
 import os
 from scipy import stats
 from tqdm import tqdm
+from scipy.sparse.linalg import eigs
 
 
 def load_user_dict(file_name):
@@ -109,12 +110,19 @@ def getEigVec(matrix, cluster):
     return vec
 
 
+def GetEignVec(matrix, cluster):
+    N = (np.eye(matrix.shape[0]) * float(np.max(matrix))) - matrix
+    vals, vecs = eigs(N, k=cluster, which='LM')
+    vecs = np.real(vecs)
+    return vecs
+
+
 def laplacian(W, norm_type, d_type, weak_lambda):
     """Computes the symetric normalized laplacian.
     L = D^{-1/2} A D{-1/2}
 
-    d_type = 'weak_reg' --> LEPORID
-    d_type = 'spectral' --> LE
+    d_type = 'leporid' --> LEPORID
+    d_type = 'le' --> LE
     """
     D = np.zeros(W.shape)
     D1 = np.zeros(W.shape)
@@ -124,7 +132,7 @@ def laplacian(W, norm_type, d_type, weak_lambda):
         w1 = np.sum(W != 0, axis=1, dtype=float)
         w2 = np.sum(W, axis=1, dtype=float)
         w = w1 + w2
-    elif d_type == 'weak_reg':
+    elif d_type == 'leporid':
         w1 = np.sum(W, axis=1, dtype=float)
         # print('w1 = ', w1)
         e = np.max(w1)
@@ -215,18 +223,17 @@ def normalization(x):
 if __name__ == "__main__":
     # Initialize the parameters
     parser = argparse.ArgumentParser(description="Leporid Initialization")
-    parser.add_argument('--data_folder', default='../dataset', help='the data folder path')
-    parser.add_argument('--dataset', default='/paper_example2', help='the selected dataset name')
-    parser.add_argument('--adj_graph', default=1, help='1 for loading the existing adjacent graph, otherwise 0')
+    parser.add_argument('--data_folder', default='../dataset/ml_1m_all', help='the data folder path')
+    parser.add_argument('--dataset', default='/ml_1m_all', help='the selected dataset name')
+    parser.add_argument('--adj_graph', default=0, help='1 for loading the existing adjacent graph, otherwise 0')
     parser.add_argument('--distance', default='jaccard', help='the distance for building adjacent graph')
     parser.add_argument('--topk', default=1000, help='the topk for building KNN graph')
-    parser.add_argument('--d_type', default='spectral',
-                        help='Laplacian Eigenmaps Function, including degree_centrality, spectral, strong_reg, and '
-                             'weak_reg, where spectral refers to LE and weak_reg refers to Leporid in paper')
-    parser.add_argument('--weak_lambda', default=0.5, help='regularization coefficient, used when d_type is weak_reg')
+    parser.add_argument('--d_type', default='leporid',
+                        help='Laplacian Eigenmaps Function, including degree_centrality, strong_reg,  leporid and '
+                             'le, where le refers to LE and leporid refers to Leporid in paper')
+    parser.add_argument('--weak_lambda', default=0.5, help='regularization coefficient, used when d_type is leporid')
     parser.add_argument('--norm', default='sym', help='the normalization function, including sym, rw, and nonorm')
-    parser.add_argument('--cluster_num', default=4, help='output embedding size')
-    parser.add_argument('--if_apx', default=0, help='1: using approximate eigen decomposition')
+    parser.add_argument('--cluster_num', default=64, help='output embedding size')
     parser.add_argument('--seed', default=123, help='numpy.random.seed')
 
     args = parser.parse_args()
@@ -235,19 +242,16 @@ if __name__ == "__main__":
 
     np.random.seed(args.seed)
 
-    f_train = args.data_folder + args.dataset + args.dataset + '_train.txt'
-    if args.if_apx:
-        result_path = args.data_folder + args.dataset + '/emb_nys_12/' + args.d_type + str(args.weak_lambda)
-    else:
-        result_path = args.data_folder + args.dataset + '/emb/' + args.d_type + str(args.weak_lambda)
+    f_train = args.data_folder + args.dataset + '_train.txt'
+    result_path = args.data_folder + '/emb/' + args.d_type + str(args.weak_lambda)
 
     train_users = load_user_dict(f_train)
     train_items = load_item_dict(f_train)
     user_num = len(train_users.keys())
     item_num = len(train_items.keys())
 
-    adj_graph_user = args.data_folder + args.dataset + args.dataset + '_init_user_' + args.distance + '.npy'
-    adj_graph_item = args.data_folder + args.dataset + args.dataset + '_init_item_' + args.distance + '.npy'
+    adj_graph_user = args.data_folder + args.dataset + '_init_user_' + args.distance + '.npy'
+    adj_graph_item = args.data_folder + args.dataset + '_init_item_' + args.distance + '.npy'
 
     folder = os.path.exists(result_path)
     if not folder:
@@ -256,7 +260,7 @@ if __name__ == "__main__":
 
     result_file_path_t = str(args.cluster_num) + '_k' + str(args.topk) + args.norm + args.distance
 
-    if 0:
+    if 1:
         # For user Embedding
         if args.adj_graph:
             user_l = np.load(adj_graph_user)
@@ -274,25 +278,8 @@ if __name__ == "__main__":
         user_emb_file1 = result_path + args.dataset + '_user' + result_file_path_t + '.npy'
         user_emb_file = result_path + args.dataset + '_user' + result_file_path_t + '_norm.npy'
 
-        if args.if_apx:
-            m = int(user_lap.shape[0] / 2)
-            print('m = ', m)
-            assert m >= args.cluster_num
-            u_vec = nys(user_lap, m, args.cluster_num)
-            # user_lap = uniformNystrom(user_lap, n_components=m, kernel_func=gauss)
-            # import matlab.engine
-            # eng = matlab.engine.start_matlab()
-            # G = matlab.double(user_lap.tolist())
-            # u_vec = eng.nys(G, args.cluster_num)
-            # u_vec = np.asarray(u_vec)
-            # print('u_vec = ', u_vec)
-        # print('user_lap = ', user_lap)
-        else:
-            u_vec = getEigVec(user_lap, args.cluster_num)
-        # print('u_vec11 = ', u_vec)
-        # input('debug')
-        # save to file
-        # input('debug')
+        u_vec = GetEignVec(user_lap, args.cluster_num)
+
         np.save(user_emb_file1, u_vec)
 
         # normalize and save to file
@@ -301,7 +288,7 @@ if __name__ == "__main__":
 
         print('finish user embedding.')
 
-    if 0:
+    if 1:
         # For Item Embedding
         if args.adj_graph:
             item_l = np.load(adj_graph_item)
@@ -319,20 +306,7 @@ if __name__ == "__main__":
         item_emb_file1 = result_path + args.dataset + '_item' + result_file_path_t + '.npy'
         item_emb_file = result_path + args.dataset + '_item' + result_file_path_t + '_norm.npy'
 
-        if args.if_apx:
-            m = int(item_lap.shape[0] / 2)
-            print('m = ', m)
-            assert m >= args.cluster_num
-            print('item_lap = ', np.isnan(np.min(item_lap)))
-            i_vec = nys(item_lap, m, args.cluster_num)
-            # item_lap = uniformNystrom(item_lap, n_components=1000, kernel_func=gauss)
-            # import matlab.engine
-            # eng = matlab.engine.start_matlab()
-            # G = matlab.double(item_lap.tolist())
-            # i_vec = eng.nys(G, args.cluster_num)
-            # i_vec = np.asarray(i_vec)
-        else:
-            i_vec = getEigVec(item_lap, args.cluster_num)
+        i_vec = GetEignVec(item_lap, args.cluster_num)
 
         # save to file
         np.save(item_emb_file1, i_vec)
@@ -341,14 +315,14 @@ if __name__ == "__main__":
 
         print('finish item embedding.')
 
-    if 1:
-        # for paper example
+    if 0:
+        # for paper example --> Figure 1
         # Load data
         adj_graph = np.load(args.data_folder + args.dataset + args.dataset + '.npy')
         laplacian_matrix = laplacian(adj_graph, args.norm, args.d_type, args.weak_lambda)
         print('laplacian_matrix = ', laplacian_matrix.shape)
 
-        i_vec = getEigVec(laplacian_matrix, args.cluster_num)
+        i_vec = GetEignVec(laplacian_matrix, args.cluster_num)
         print('i_vec = ', i_vec)
 
         # save to file
