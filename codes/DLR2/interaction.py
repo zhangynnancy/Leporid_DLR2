@@ -76,42 +76,18 @@ def load_file_dict(args, type):
 
 
 def load_emb_file(args, topk, distance, norm, dim, type):
-    if args.initialization == 'hyperparameter_study':
-        print('args.initialization == hyperparameter_study')
-        if type == 1:
-            print('load item emb')
-            file_name = args.data_folder + 'emb/' + args.initial_type + str(
-                args.coefficient) + '/' + args.dataset + '_item' + str(dim) + '_k' + str(
-                topk) + norm + distance + '_norm.npy'
-        else:
-            print('load user emb')
-            file_name = args.data_folder + 'emb/' + args.initial_type + str(
-                args.coefficient) + '/' + args.dataset + '_user' + str(dim) + '_k' + str(
-                topk) + norm + distance + '_norm.npy'
-    elif 'le' in args.initialization:
-        print('le in args.initialization is True')
-        if type == 1:
-            print('load item emb')
-            file_name = args.data_folder + 'emb/' + args.initialization + '/' + args.dataset + '_item' + str(
-                dim) + '_k' + str(topk) + norm + distance + '_norm.npy'
-        else:
-            print('load user emb')
-            file_name = args.data_folder + 'emb/' + args.initialization + '/' + args.dataset + '_user' + str(
-                dim) + '_k' + str(topk) + norm + distance + '_norm.npy'
+    print('Initialize embedding with ', args.initialization)
+    if type == 1:
+        print('load item emb')
+        file_name = args.data_folder + 'emb/' + args.initialization + '/' + args.dataset + '_item' + str(
+            dim) + '_k' + str(topk) + norm + distance + '_norm.npy'
     else:
-        if type == 1:
-            print('load item emb')
-            file_name = args.data_folder + 'emb/' + args.initialization + '/' + args.dataset + '_item' + str(
-                dim) + '_k' + args.initialization + '_norm.npy'
-        else:
-            print('load user emb')
-            file_name = args.data_folder + 'emb/' + args.initialization + '/' + args.dataset + '_user' + str(
-                dim) + '_k' + args.initialization + '_norm.npy'
+        print('load user emb')
+        file_name = args.data_folder + 'emb/' + args.initialization + '/' + args.dataset + '_user' + str(
+            dim) + '_k' + str(topk) + norm + distance + '_norm.npy'
     print('file_name = ', file_name)
     emb = np.load(file_name)
-    # print('emb = ', emb)
     print('emb shape = ', emb.shape)
-    # input('debug')
     return emb
 
 
@@ -158,7 +134,6 @@ class Interaction(object):
         self.train_file, self.item_set = load_file_dict(args, type=1)
         self.validate_file, _ = load_file_dict(args, type=2)
         self.test_file, _ = load_file_dict(args, type=0)
-        # self.train_can, self.test_can, self.val_can = self.load_can_file()
 
         self.add_regularization = args.add_regularization
         self.u_reg = float(args.u_reg)
@@ -252,23 +227,6 @@ class Interaction(object):
         self.Feature_Gen_optim = Adam(self.Feature_Gen.parameters(), lr=self.pre_lr)
         self.Critic_Network_optim = Adam(self.Critic_Network.parameters(), lr=self.pre_lr)
         self.Actor_Network_optim = Adam(self.Actor_Network.parameters(), lr=self.pre_lr)
-
-    def load_can_file(self):
-        train_can = {}
-        test_can = {}
-        val_can = {}
-        for user in self.train_file.keys():
-            train_set = set(self.train_file[user])
-            val_set = set()
-            test_set = set()
-            if user in self.validate_file.keys():
-                val_set = set(self.validate_file[user])
-            if user in self.test_file.keys():
-                test_set = set(self.test_file[user])
-            train_can[user] = np.array(list(deepcopy(self.item_set - val_set - test_set)))
-            test_can[user] = np.array(list(deepcopy(self.item_set - val_set - train_set)))
-            val_can[user] = np.array(list(deepcopy(self.item_set - train_set - test_set)))
-        return train_can, test_can, val_can
 
     # Pre-Train Part
     def pre_init(self, user, num):
@@ -439,15 +397,9 @@ class Interaction(object):
             loss = loss_critic
         else:
             loss = loss_actor
-        # print('loss_critic = ', loss_critic)
-        # print('loss_actor = ', loss_actor)
-        # print('loss = ', loss)
         loss += reg_loss
         loss.retain_grad()
         loss.backward()
-        # for param in getattr(self, critic).parameters():
-        #     print(F.normalize(param))
-        # print('loss = ', loss.grad)
         self.Feature_Gen_optim.step()
         self.Critic_Network_optim.step()
         self.Actor_Network_optim.step()
