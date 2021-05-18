@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="64b3c333-31b1-450a-a204-418984168338" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -111,7 +111,7 @@
       <workItem from="1617245892417" duration="1199000" />
       <workItem from="1621320705160" duration="120000" />
       <workItem from="1621320830899" duration="15000" />
-      <workItem from="1621320855088" duration="6154000" />
+      <workItem from="1621320855088" duration="6317000" />
     </task>
     <servers />
   </component>
