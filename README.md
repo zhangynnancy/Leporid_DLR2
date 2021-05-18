@@ -1,7 +1,7 @@
 # LEPORID_DLR2
 This is our implementation for the paper:
 
->Yinan Zhang, Boyang Li, Yong Liu, Hao Wang and Chunyan Miao (2020). Initialization Matters: Regularizing Manifold-informed Initialization for Neural Recommendation Systems. Accepeted by KDD 2021.
+>Yinan Zhang, Boyang Li, Yong Liu, Hao Wang and Chunyan Miao (2021). Initialization Matters: Regularizing Manifold-informed Initialization for Neural Recommendation Systems. Accepeted by KDD 2021.
 
 
 ## Introduction
