@@ -51,7 +51,7 @@ Run the simulator(Fig.2) in the paper:
 Run the le or leporid initialization:
 > python codes/le_leporid.py
 
-Run the our new proposed recommendation model, DLR2:
+Run the new proposed recommendation model, DLR2:
 > python codes/DLR2/main.py
 
 
