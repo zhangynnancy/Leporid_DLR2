@@ -18,9 +18,10 @@ If you want to use our codes in your research, please cite:
                Yong Liu and
                Hao Wang and
                Chunyan Miao,
-  title     = {Initialization Matters: Regularizing Manifold-informed Initialization for Neural Recommendation Systems},
-  booktitle = {Proceedings of the 27th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, 
-              {SIGKDD} 2021, Singapore, August 14-18, 2021.},
+  title     = {Initialization Matters: Regularizing Manifold-informed Initialization for Neural 
+               Recommendation Systems},
+  booktitle = {Proceedings of the 27th ACM SIGKDD International Conference on Knowledge Discovery
+               and Data Mining, {SIGKDD} 2021, Singapore, August 14-18, 2021.},
   year      = {2021},
 }
 ```
