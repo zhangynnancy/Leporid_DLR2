@@ -169,7 +169,7 @@ def train(all_data, test_model, save_performance, draw_loss, add_sch):
             plt.savefig(args.initialization + '_actor.png')
             plt.show()
 
-        if test_model and (iteration + 1) % 20 == 0:
+        if test_model and (iteration + 1) % 100 == 0:
             if args.pretrain_model_type == 'critic':
                 vcprec, vcrec, vchr, _ = interact.validating(1)
                 val_critic.append([vcprec, vcrec, vchr])
@@ -191,32 +191,26 @@ def train(all_data, test_model, save_performance, draw_loss, add_sch):
                     if cur_best_test_actor <= taprec[0]:
                         cur_best_test_actor = taprec[0]
             else:
-                tcprec, tcrec, tchr, _ = interact.testing(1)
-                te_critic.append([tcprec, tcrec, tchr])
-                print('tcprec, tcrec, tchr = ', tcprec, tcrec, tchr)
-                if cur_best_test_critic <= tchr[1]:
-                    cur_best_test_critic = tchr[1]
+                vaprec, varec, vahr, _ = interact.validating(0)
+                vcprec, vcrec, vchr, _ = interact.validating(1)
 
-                # vaprec, varec, vahr, _ = interact.validating(0)
-                # vcprec, vcrec, vchr, _ = interact.validating(1)
-                #
-                # val_actor.append([vaprec, varec, vahr])
-                # val_critic.append([vcprec, vcrec, vchr])
-                # if cur_bestval_test_actor <= vaprec[0]:
-                #     cur_bestval_test_actor = vaprec[0]
-                #     taprec, tarec, tahr, _ = interact.testing(0)
-                #     te_actor.append([taprec, tarec, tahr])
-                #     print('taprec, tarec, tahr = ', taprec, tarec, tahr)
-                #     if cur_best_test_actor <= taprec[0]:
-                #         cur_best_test_actor = taprec[0]
-                #
-                # if cur_bestval_test_critic <= vcprec[0]:
-                #     cur_bestval_test_critic = vcprec[0]
-                #     tcprec, tcrec, tchr, _ = interact.testing(1)
-                #     te_critic.append([tcprec, tcrec, tchr])
-                #     print('tcprec, tcrec, tchr = ', tcprec, tcrec, tchr)
-                #     if cur_best_test_critic <= tcprec[0]:
-                #         cur_best_test_critic = tcprec[0]
+                val_actor.append([vaprec, varec, vahr])
+                val_critic.append([vcprec, vcrec, vchr])
+                if cur_bestval_test_actor <= vaprec[0]:
+                    cur_bestval_test_actor = vaprec[0]
+                    taprec, tarec, tahr, _ = interact.testing(0)
+                    te_actor.append([taprec, tarec, tahr])
+                    print('taprec, tarec, tahr = ', taprec, tarec, tahr)
+                    if cur_best_test_actor <= taprec[0]:
+                        cur_best_test_actor = taprec[0]
+
+                if cur_bestval_test_critic <= vcprec[0]:
+                    cur_bestval_test_critic = vcprec[0]
+                    tcprec, tcrec, tchr, _ = interact.testing(1)
+                    te_critic.append([tcprec, tcrec, tchr])
+                    print('tcprec, tcrec, tchr = ', tcprec, tcrec, tchr)
+                    if cur_best_test_critic <= tcprec[0]:
+                        cur_best_test_critic = tcprec[0]
 
             if save_performance:
                 wb = xlwt.Workbook()
