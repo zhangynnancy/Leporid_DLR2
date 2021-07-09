@@ -200,35 +200,47 @@ class Interaction(object):
         self.Critic_Network = CriticModel(self.dim)
         self.Actor_Network = ActorModel(self.dim)
 
-        # initialize embedding layer for Feature
-        if args.initialization == 'random':
-            # random initialization
-            var = 0.01
-            print('random initialization with var = ', var)
-            self.Feature_Gen.item_embeddings.weight.data.normal_(0, var)
-            self.Feature_Gen.user_embeddings.weight.data.normal_(0, var)
-        else:
-            self.user_emb = load_emb_file(args, hyperparameters['spectopk'], hyperparameters['dis'],
-                                          hyperparameters['norm'], hyperparameters['dim'], type=0)
-            self.item_emb = load_emb_file(args, hyperparameters['spectopk'], hyperparameters['dis'],
-                                          hyperparameters['norm'], hyperparameters['dim'], type=1)
-            self.Feature_Gen.item_embeddings = nn.Embedding.from_pretrained(
-                to_tensor(self.item_emb, dtype='float', requires_grad=True))
-            self.Feature_Gen.user_embeddings = nn.Embedding.from_pretrained(
-                to_tensor(self.user_emb, dtype='float', requires_grad=True))
+        if args.load_trained == 'critic':
+            if USE_CUDA:
+                print('using gpu')
+                self.Feature_Gen = self.Feature_Gen.cuda()
+                self.Critic_Network = self.Critic_Network.cuda()
+                self.Actor_Network = self.Actor_Network.cuda()
+            d = args.initial_type + str(args.lr) + '_bestCritic/'
+            path = args.data_folder + d
+            self.Feature_Gen.load_state_dict(torch.load(path + 'best_Feature_Gen.pth')['model'])
+            self.Critic_Network.load_state_dict(torch.load(path + 'best_Critic.pth')['model'])
 
-        if USE_CUDA:
-            print('using gpu')
-            self.Feature_Gen = self.Feature_Gen.cuda()
-            self.Critic_Network = self.Critic_Network.cuda()
-            self.Actor_Network = self.Actor_Network.cuda()
         else:
-            print('no gpu')
+            # initialize embedding layer for Feature
+            if args.initialization == 'random':
+                # random initialization
+                var = 0.01
+                print('random initialization with var = ', var)
+                self.Feature_Gen.item_embeddings.weight.data.normal_(0, var)
+                self.Feature_Gen.user_embeddings.weight.data.normal_(0, var)
+            else:
+                self.user_emb = load_emb_file(args, hyperparameters['spectopk'], hyperparameters['dis'],
+                                              hyperparameters['norm'], hyperparameters['dim'], type=0)
+                self.item_emb = load_emb_file(args, hyperparameters['spectopk'], hyperparameters['dis'],
+                                              hyperparameters['norm'], hyperparameters['dim'], type=1)
+                self.Feature_Gen.item_embeddings = nn.Embedding.from_pretrained(
+                    to_tensor(self.item_emb, dtype='float', requires_grad=True))
+                self.Feature_Gen.user_embeddings = nn.Embedding.from_pretrained(
+                    to_tensor(self.user_emb, dtype='float', requires_grad=True))
 
-        # initial code
-        self.Feature_Gen_optim = Adam(self.Feature_Gen.parameters(), lr=self.lr)
-        self.Critic_Network_optim = Adam(self.Critic_Network.parameters(), lr=self.lr)
-        self.Actor_Network_optim = Adam(self.Actor_Network.parameters(), lr=self.lr)
+            if USE_CUDA:
+                print('using gpu')
+                self.Feature_Gen = self.Feature_Gen.cuda()
+                self.Critic_Network = self.Critic_Network.cuda()
+                self.Actor_Network = self.Actor_Network.cuda()
+            else:
+                print('no gpu')
+
+            # initial code
+            self.Feature_Gen_optim = Adam(self.Feature_Gen.parameters(), lr=self.lr)
+            self.Critic_Network_optim = Adam(self.Critic_Network.parameters(), lr=self.lr)
+            self.Actor_Network_optim = Adam(self.Actor_Network.parameters(), lr=self.lr)
 
     # Pre-Train Part
     def init(self, user, num):

@@ -1,7 +1,9 @@
-import argparse
+﻿import argparse
 import os
 import cProfile
 import gc
+import sys
+
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
@@ -44,6 +46,11 @@ def train(all_data, test_model, save_performance, draw_loss, add_sch):
         user_set = interact.user_set
     else:
         user_set = interact.user_set1
+
+    if args.load_trained == 'critic':
+        tcprec, tcrec, tchr, _ = interact.testing(1)
+        print('tcprec, tcrec, tchr = ', tcprec, tcrec, tchr)
+        sys.exit()
 
     stored_neg = 100
     neg_num = stored_neg
@@ -162,7 +169,7 @@ def train(all_data, test_model, save_performance, draw_loss, add_sch):
             plt.savefig(args.initialization + '_actor.png')
             plt.show()
 
-        if test_model and (iteration + 1) % 100 == 0:
+        if test_model and (iteration + 1) % 20 == 0:
             if args.pretrain_model_type == 'critic':
                 vcprec, vcrec, vchr, _ = interact.validating(1)
                 val_critic.append([vcprec, vcrec, vchr])
@@ -184,26 +191,32 @@ def train(all_data, test_model, save_performance, draw_loss, add_sch):
                     if cur_best_test_actor <= taprec[0]:
                         cur_best_test_actor = taprec[0]
             else:
-                vaprec, varec, vahr, _ = interact.validating(0)
-                vcprec, vcrec, vchr, _ = interact.validating(1)
+                tcprec, tcrec, tchr, _ = interact.testing(1)
+                te_critic.append([tcprec, tcrec, tchr])
+                print('tcprec, tcrec, tchr = ', tcprec, tcrec, tchr)
+                if cur_best_test_critic <= tchr[1]:
+                    cur_best_test_critic = tchr[1]
 
-                val_actor.append([vaprec, varec, vahr])
-                val_critic.append([vcprec, vcrec, vchr])
-                if cur_bestval_test_actor <= vaprec[0]:
-                    cur_bestval_test_actor = vaprec[0]
-                    taprec, tarec, tahr, _ = interact.testing(0)
-                    te_actor.append([taprec, tarec, tahr])
-                    print('taprec, tarec, tahr = ', taprec, tarec, tahr)
-                    if cur_best_test_actor <= taprec[0]:
-                        cur_best_test_actor = taprec[0]
-
-                if cur_bestval_test_critic <= vcprec[0]:
-                    cur_bestval_test_critic = vcprec[0]
-                    tcprec, tcrec, tchr, _ = interact.testing(1)
-                    te_critic.append([tcprec, tcrec, tchr])
-                    print('tcprec, tcrec, tchr = ', tcprec, tcrec, tchr)
-                    if cur_best_test_critic <= tcprec[0]:
-                        cur_best_test_critic = tcprec[0]
+                # vaprec, varec, vahr, _ = interact.validating(0)
+                # vcprec, vcrec, vchr, _ = interact.validating(1)
+                #
+                # val_actor.append([vaprec, varec, vahr])
+                # val_critic.append([vcprec, vcrec, vchr])
+                # if cur_bestval_test_actor <= vaprec[0]:
+                #     cur_bestval_test_actor = vaprec[0]
+                #     taprec, tarec, tahr, _ = interact.testing(0)
+                #     te_actor.append([taprec, tarec, tahr])
+                #     print('taprec, tarec, tahr = ', taprec, tarec, tahr)
+                #     if cur_best_test_actor <= taprec[0]:
+                #         cur_best_test_actor = taprec[0]
+                #
+                # if cur_bestval_test_critic <= vcprec[0]:
+                #     cur_bestval_test_critic = vcprec[0]
+                #     tcprec, tcrec, tchr, _ = interact.testing(1)
+                #     te_critic.append([tcprec, tcrec, tchr])
+                #     print('tcprec, tcrec, tchr = ', tcprec, tcrec, tchr)
+                #     if cur_best_test_critic <= tcprec[0]:
+                #         cur_best_test_critic = tcprec[0]
 
             if save_performance:
                 wb = xlwt.Workbook()
@@ -291,7 +304,7 @@ def train(all_data, test_model, save_performance, draw_loss, add_sch):
                 print('setting = ', hyperparameters)
                 print('best_test_critic = ', best_test_critic)
 
-                d = args.initial_type + str(args.dim) + '_bestCritic/'
+                d = args.initial_type + str(args.lr) + '_bestCritic/'
                 path = args.data_folder + d
                 folder = os.path.exists(path)
 
@@ -336,10 +349,10 @@ if __name__ == "__main__":
     parser.add_argument('--val_memory_size', default=100000, help='maximum size for memory for validation')
 
     # Train
-    parser.add_argument('--lr', default=1e-3, help='the learning rate for pre-training')
+    parser.add_argument('--lr', default=5e-4, help='the learning rate for pre-training')
     parser.add_argument('--loss_actor', default='hinge', help='hinge, log, square_square, square_exp')
     parser.add_argument('--loss_critic', default='square_square', help='hinge, log, square_square, square_exp')
-    parser.add_argument('--load_trained', default=0, help='both, critic, actor and 0')
+    parser.add_argument('--load_trained', default='critic', help='both, critic, actor and 0')
     parser.add_argument('--pretrain_model_type', default='both', help='both, critic, actor')
     parser.add_argument('--max_iteration', default=5000, help='max step for pre train process')  # init 1000
     parser.add_argument('--memory_size', default=10000000, help='maximum size for memory')
