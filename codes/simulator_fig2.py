@@ -84,15 +84,17 @@ def main():
     y = y[start:end]
     fig, ax = plt.subplots()
     # plt.subplot(2, 1, 1)
-    plt.xlabel('Node degree', fontsize=18)
-    plt.ylabel('Change in L2 norm from 1 extra edge', fontsize=18)
+    # plt.tight_layout()
+    plt.xlabel('Node degree', fontsize=20)
+    plt.ylabel('Change in L2 norm from 1 extra edge', fontsize=20)
     locmin = matplotlib.ticker.LogLocator(base=10.0, subs=(0.1,0.2,0.4,0.6,0.8,1,2,4,6,8,10 )) 
     ax.yaxis.set_minor_locator(locmin)
     ax.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
-    ax.tick_params(axis='both', which='major', labelsize=18)
-    ax.tick_params(axis='both', which='minor', labelsize=18)
+    ax.tick_params(axis='both', which='major', labelsize=20)
+    ax.tick_params(axis='both', which='minor', labelsize=20)
     plt.yscale('log')
     plt.scatter(x, y, s=50.0, color='black')
+    plt.savefig('result.png', bbox_inches="tight")
 
 
     # plt.subplot(2, 1, 2)

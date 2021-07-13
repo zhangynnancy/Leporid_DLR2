@@ -201,12 +201,13 @@ class Interaction(object):
         self.Actor_Network = ActorModel(self.dim)
 
         if args.load_trained == 'critic':
+            print('load pre-trained weights...')
             if USE_CUDA:
                 print('using gpu')
                 self.Feature_Gen = self.Feature_Gen.cuda()
                 self.Critic_Network = self.Critic_Network.cuda()
                 self.Actor_Network = self.Actor_Network.cuda()
-            d = args.initial_type + str(args.lr) + '_bestCritic/'
+            d = 'pretrained_weights/'
             path = args.data_folder + d
             self.Feature_Gen.load_state_dict(torch.load(path + 'best_Feature_Gen.pth')['model'])
             self.Critic_Network.load_state_dict(torch.load(path + 'best_Critic.pth')['model'])
